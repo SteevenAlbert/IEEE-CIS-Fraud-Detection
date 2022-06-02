@@ -3,6 +3,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from scipy import stats
+from sklearn.preprocessing import LabelEncoder
 
 
 def group_email_domain(df):
@@ -125,4 +126,70 @@ def count_fraud_plot(df, col):
                    ha='center', fontsize=8)
     plt.subplots_adjust(hspace=.4, top=1.1)
     plt.show()
+
+def cat_num_features(df):
+    
+    '''
+        Utility Function to get the names of Categorical Features and 
+        Numerical Features of the given Dataset.
+    '''
+    
+    catf = []
+    numf = []
+    
+    # Given Categorical Features 
+    catf = ['ProductCD', 'card1', 'card2', 'card3', 'card4', 'card5', \
+            'card6', 'addr1', 'addr2', 'P_emaildomain', 'R_emaildomain', 'M1', 'M2', \
+            'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', \
+            'DeviceType', 'DeviceInfo']
+    catf+=['id_'+str(i) for i in range(12,39)]
+
+
+    # Updating the Categorical Feature Names List based on the columns present in the dataframe
+    catf = [feature for feature in catf if feature in df.columns.values]
+    numf = [feature for feature in df.columns if feature not in catf and not feature == 'isFraud']
+    
+    return (catf, numf)  
+
+
+
+def label_encode(X_train, X_test, catf):
+  
+  '''
+    Utility Function to Encode Categorical Features.
+  '''
+
+  for f in catf:
+    
+    X_train[f] = X_train[f].astype(str)
+    X_test[f] = X_test[f].astype(str)
+    
+    le = LabelEncoder()
+    le.fit(X_train[f])
+    mapping = dict(zip(le.classes_, le.transform(le.classes_)))
+    X_train[f] = le.transform(X_train[f])
+    
+    # Manually Encoding the CV and Test Dataset so as to avoid error for any category which is not present in train set
+    
+    # All the categories which are not present in train datset are encoded as -1
+    
+    X_test[f] = [-1 if mapping.get(v, -1)==-1 else mapping[v] for v in X_test[f].values ]
+
+  return (X_train, X_test)
+
+
+def normalize(X_train, X_test):
+    '''
+        Utility Function to scale the values of the Train, CV and Test Datasets between 0 and 1.
+    '''
+    
+    for f in X_train.columns:
+
+        min_val = X_train[f].min()
+        max_val = X_train[f].max()
+        
+        X_train[f] = (X_train[f]-min_val)/(max_val-min_val)
+        X_test[f] = (X_test[f]-min_val)/(max_val-min_val)
+        
+    return (X_train, X_test)
 
