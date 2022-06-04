@@ -153,7 +153,7 @@ def cat_num_features(df):
 
 
 
-def label_encode(X_train, X_test, catf):
+def label_encode(X_train,catf):
   
   '''
     Utility Function to Encode Categorical Features.
@@ -162,7 +162,6 @@ def label_encode(X_train, X_test, catf):
   for f in catf:
     
     X_train[f] = X_train[f].astype(str)
-    X_test[f] = X_test[f].astype(str)
     
     le = LabelEncoder()
     le.fit(X_train[f])
@@ -173,9 +172,8 @@ def label_encode(X_train, X_test, catf):
     
     # All the categories which are not present in train datset are encoded as -1
     
-    X_test[f] = [-1 if mapping.get(v, -1)==-1 else mapping[v] for v in X_test[f].values ]
 
-  return (X_train, X_test)
+  return X_train
 
 
 def normalize(X_train, X_test):
